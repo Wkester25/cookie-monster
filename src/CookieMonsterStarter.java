@@ -287,7 +287,7 @@ public class CookieMonsterStarter
     currentPath.add(new Location(0, 0, checkMultipulePaths(0, 0), cookies[0][0]));
     currentTotal += cookies[0][0];
     if (checkMultipulePaths(0, 0)) {
-      branches.add(new Branch(0, 0, checkMultipulePaths(0, 0), cookies[0][0], currentPath, currentTotal));
+      branches.add(new Branch(0, 0, checkMultipulePaths(0, 0), cookies[0][0], copy(currentPath), currentTotal));
     }
     int count = 0;
     while((!branches.isEmpty() || goodPoint(row, col + 1) || goodPoint(row + 1, col))) {
