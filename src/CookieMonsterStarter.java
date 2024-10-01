@@ -92,6 +92,16 @@ public class CookieMonsterStarter
     map = new int[SIZE][SIZE];
   }
 
+  private void makeRandomCookies(int size)
+  {
+    SIZE = (size);
+    cookies = MatrixTools.Integer.Generation.randomMatrix(SIZE, SIZE, -1, 9);
+    path = new int[SIZE][SIZE];
+    map = new int[SIZE][SIZE];
+  }
+
+
+
   /**
    *  Returns true if (row, col) is within the array and that position is
    *  not a barrel (-1); false otherwise.  Notice short-circuit evaluation
@@ -170,25 +180,69 @@ public class CookieMonsterStarter
   private int recOptimalPath(int row, int col)
   {
     int count = 0;
-
-    //Code here.
-
+    if (goodPoint(row, col))
+    {
+      int goRight = recOptimalPath(row, col + 1);
+      int goDown = recOptimalPath(row + 1, col);
+      count = cookies[row][col] + Math.max(goRight, goDown);
+      map[row][col] = count;
+    }
     return count;
   }
 
 
   public static void main(String args[]) throws InterruptedException {  // Adapt this as you see fit.
     CookieMonsterStarter monster = new CookieMonsterStarter();
-    monster.loadCookies();
+    Scanner kboard = new Scanner(System.in);
+    System.out.print("Enter 1 to read from file, 2 to generate random cookies: ");
+    int choice = kboard.nextInt();
+    if (choice == 1)
+      monster.loadCookies();
+    else {
+        System.out.print("Please enter the size of the cookie array or -1 for random size: ");
+        int size = kboard.nextInt();
+        if (size == -1){
+          monster.makeRandomCookies();
+        } else {
+          monster.makeRandomCookies(size);
+        }
+    }
     MatrixTools.Integer.Display.displayMatrixJFrame(monster.cookies);
-
-    System.out.println("Optimal path has " +
-            monster.findOptimalPath() + " cookies.\n");
-
-    MatrixTools.Integer.Display.displayMatrixJFrame(monster.path);
-    System.out.println("Number of Possible Paths: " + monster.paths.size());
-    for (Queue<Location> path : monster.paths){
-      System.out.println("Path: " + path);
+    System.out.println("Please select the method you would like to use to find the optimal path.");
+    System.out.println("1. Dynamic Programming");
+    System.out.println("2. Recursive");
+    System.out.println("3. Stacks & Queues Fun");
+    System.out.print("Method: ");
+    int method = kboard.nextInt();
+    if (method == 1){
+      System.out.println("The Dynamic Programming method has been selected. This method generates a heatmap of the maximum possible value of cookies at each location. The optimal path is then found by backtracking from the end to the beginning. The heatmap and best path will now be displayed in new windows.");
+      System.out.println("Optimal path has " + monster.optimalPathDynamic() + " cookies.\n");
+        MatrixTools.Integer.Display.displayMatrixJFrame(monster.map);
+        MatrixTools.Integer.Display.displayMatrixJFrame(monster.path);
+    } else if (method == 2){
+      System.out.println("The Recursive method has been selected. This method recursively finds the optimal path by checking the maximum value of cookies at each location. The optimal path is then found by backtracking from the end to the beginning. The heatmap will now be displayed in a new window.");
+      System.out.println("Optimal path has " + monster.recOptimalPath(0,0) + " cookies.\n");
+        MatrixTools.Integer.Display.displayMatrixJFrame(monster.map);
+        MatrixTools.Integer.Display.displayMatrixJFrame(monster.path);
+    } else {
+        System.out.println("The Stacks & Queues Fun method has been selected. This method uses a queue to keep track of the current path and a stack to keep track of all possible paths. Only the best solution will now displayed in a new window.");
+        monster.findOptimalPath();
+        MatrixTools.Integer.Display.displayMatrixJFrame(monster.path);
+    }
+    if(method == 3){
+      System.out.println("Would you like to see all paths? (Y/N) [Its usually a lot of paths!]");
+        String answer = kboard.next();
+        if(answer.equalsIgnoreCase("Y")){
+          System.out.println("Number of Possible Paths: " + monster.paths.size());
+          for(Queue<Location> path : monster.paths){
+            System.out.println("Path: " + path);
+          }
+        } else {
+          System.out.println("Goodbye!");
+        }
+    }
+    else {
+      System.out.println("Goodbye!");
     }
   }
 
@@ -199,7 +253,6 @@ public class CookieMonsterStarter
 
   public int[][] makeHeatMap(){
     int[][] maxCookies = new int[SIZE][SIZE];
-    System.out.println("SIZE: " + SIZE);
     maxCookies[0][0] = cookies[0][0];
     map[0][0] = cookies[0][0];
     for (int row = 0;   row < SIZE;   row++)
@@ -223,7 +276,7 @@ public class CookieMonsterStarter
     return maxCookies;
   }
 
-  public int findOptimalPath() throws InterruptedException {
+  public int findOptimalPath(){
     Queue<Location> currentPath = new LinkedList<>();
     Stack<Branch> branches = new Stack<>();
     int max = 0;
@@ -239,6 +292,7 @@ public class CookieMonsterStarter
     int count = 0;
     while((!branches.isEmpty() || goodPoint(row, col + 1) || goodPoint(row + 1, col))) {
       if (goodPoint(row, col + 1)) {
+        System.out.println("Right");
         col++;
         currentTotal += cookies[row][col];
         currentPath.add(new Location(row, col, checkMultipulePaths(row, col), cookies[row][col]));
@@ -247,6 +301,7 @@ public class CookieMonsterStarter
         }
       }
       else if (goodPoint(row + 1, col)) {
+        System.out.println("Down");
         row++;
         currentTotal += cookies[row][col];
         currentPath.add(new Location(row, col, checkMultipulePaths(row, col), cookies[row][col]));
@@ -254,7 +309,8 @@ public class CookieMonsterStarter
           branches.push(new Branch(row,col,checkMultipulePaths(row,col),cookies[row][col], copy(currentPath), currentTotal));
         }
       }
-      if (row == SIZE - 1 && col == SIZE - 1 || (!goodPoint(row, col + 1) && !goodPoint(row + 1, col))) {
+      if ((row == SIZE - 1 && col == SIZE - 1) || (!goodPoint(row, col + 1) && !goodPoint(row + 1, col))) {
+        System.out.println("End");
         if(row == SIZE - 1 && col == SIZE - 1){
           paths.add(copy(currentPath));
         }
@@ -272,13 +328,13 @@ public class CookieMonsterStarter
           col = branch.col;
           currentTotal = branch.totalValue + cookies[row][col];
           currentPath.add(new Location(row, col, checkMultipulePaths(row, col), cookies[row][col]));
-          if (checkMultipulePaths(row, col)) {
+          if (checkMultipulePaths(row, col) && row != SIZE - 1 && col != SIZE - 1) {
             branches.push(new Branch(row,col,checkMultipulePaths(row,col),cookies[row][col], copy(currentPath), currentTotal));
           }
-          System.out.println("Row: " + row + " Col: " + col);
+          System.out.println(currentPath);
         }
+
       }
-      count++;
     }
     System.out.println("Best Path: " + bestPath);
     for(Location location : bestPath){
