@@ -284,52 +284,52 @@ public class CookieMonsterStarter
     int row = 0;
     int col = 0;
     Queue<Location> bestPath = new LinkedList<>();
-    currentPath.add(new Location(0, 0, checkMultipulePaths(0, 0), cookies[0][0]));
-    currentTotal += cookies[0][0];
-    if (checkMultipulePaths(0, 0)) {
-      branches.add(new Branch(0, 0, checkMultipulePaths(0, 0), cookies[0][0], copy(currentPath), currentTotal));
+    currentPath.add(new Location(0, 0, checkMultipulePaths(0, 0), cookies[0][0]));                                //Add the first location to the current path
+    currentTotal += cookies[0][0];                                                                                                  //Add the value of the first location to the current total
+    if (checkMultipulePaths(0, 0)) {                                                                                       //If there are multiple paths from the start
+      branches.add(new Branch(0, 0, checkMultipulePaths(0, 0), cookies[0][0], copy(currentPath), currentTotal));  //Add the path to the stack
     }
     int count = 0;
-    while((!branches.isEmpty() || goodPoint(row, col + 1) || goodPoint(row + 1, col))) {
-      if (goodPoint(row, col + 1)) {
+    while((!branches.isEmpty() || goodPoint(row, col + 1) || goodPoint(row + 1, col))) {                                   //While there are still paths to check or the current path is not at the end
+      if (goodPoint(row, col + 1)) {                                                                                            //If there is a path to the right
         System.out.println("Right");
-        col++;
-        currentTotal += cookies[row][col];
-        currentPath.add(new Location(row, col, checkMultipulePaths(row, col), cookies[row][col]));
-        if (checkMultipulePaths(row, col)) {
-          branches.push(new Branch(row,col,checkMultipulePaths(row,col),cookies[row][col], copy(currentPath), currentTotal));
+        col++; //Move to the right
+        currentTotal += cookies[row][col];                                                                                          //Add the value of the current location to the total
+        currentPath.add(new Location(row, col, checkMultipulePaths(row, col), cookies[row][col]));                                  //Add the current location to the current path
+        if (checkMultipulePaths(row, col)) {                                                                                        //If there are multiple paths from the current location
+          branches.push(new Branch(row,col,checkMultipulePaths(row,col),cookies[row][col], copy(currentPath), currentTotal));       //Add the path to the stack
         }
       }
-      else if (goodPoint(row + 1, col)) {
+      else if (goodPoint(row + 1, col)) {                                                                                      //If there is a path down
         System.out.println("Down");
-        row++;
-        currentTotal += cookies[row][col];
-        currentPath.add(new Location(row, col, checkMultipulePaths(row, col), cookies[row][col]));
-        if (checkMultipulePaths(row, col)) {
-          branches.push(new Branch(row,col,checkMultipulePaths(row,col),cookies[row][col], copy(currentPath), currentTotal));
+        row++; //Move down
+        currentTotal += cookies[row][col];                                                                                          //Add the value of the current location to the total
+        currentPath.add(new Location(row, col, checkMultipulePaths(row, col), cookies[row][col]));                                  //Add the current location to the current path
+        if (checkMultipulePaths(row, col)) {                                                                                        //If there are multiple paths from the current location
+          branches.push(new Branch(row,col,checkMultipulePaths(row,col),cookies[row][col], copy(currentPath), currentTotal));       //Add the path to the stack
         }
       }
-      if ((row == SIZE - 1 && col == SIZE - 1) || (!goodPoint(row, col + 1) && !goodPoint(row + 1, col))) {
+      if ((row == SIZE - 1 && col == SIZE - 1) || (!goodPoint(row, col + 1) && !goodPoint(row + 1, col))) {                //If the current path is at the end or there are no more paths to check
         System.out.println("End");
-        if(row == SIZE - 1 && col == SIZE - 1){
-          paths.add(copy(currentPath));
+        if(row == SIZE - 1 && col == SIZE - 1){                                                                                     //If the current path is at the end
+          paths.add(copy(currentPath));                                                                                             //Add the current path to the list of possible paths
         }
-        if (currentTotal > max) {
+        if (currentTotal > max) {                                                                                                   //If the current path has more cookies than the previous best path
           System.out.println("New Max: " + currentTotal);
-          max = currentTotal;
-          bestPath = copy(currentPath);
+          max = currentTotal;                                                                                                       //Set the new best path to the current path
+          bestPath = copy(currentPath);                                                                                             //Set the new best path to the current path
         }
-        if (!branches.isEmpty()) {
-          Branch branch = branches.pop();
+        if (!branches.isEmpty()) {                                                                                                  //If there are still paths to check
+          Branch branch = branches.pop();                                                                                           //Get the next path to check
           System.out.println("Branch Pop");
           System.out.println("Branchs: " + branches);
-          currentPath = branch.getPreviousLocations();
-          row = branch.row + 1;
-          col = branch.col;
-          currentTotal = branch.totalValue + cookies[row][col];
-          currentPath.add(new Location(row, col, checkMultipulePaths(row, col), cookies[row][col]));
-          if (checkMultipulePaths(row, col) && row != SIZE - 1 && col != SIZE - 1) {
-            branches.push(new Branch(row,col,checkMultipulePaths(row,col),cookies[row][col], copy(currentPath), currentTotal));
+          currentPath = branch.getPreviousLocations();                                                                              //Set the current path to the path that was popped
+          row = branch.row + 1;                                                                                                     //Set the current row and column to the next location in the path
+          col = branch.col;                                                                                                         //Set the current row and column to the next location in the path
+          currentTotal = branch.totalValue + cookies[row][col];                                                                     //Set the current total to the total value of the path that was popped
+          currentPath.add(new Location(row, col, checkMultipulePaths(row, col), cookies[row][col]));                                //Add the next location to the current path
+          if (checkMultipulePaths(row, col) && row != SIZE - 1 && col != SIZE - 1) {                                                //If there are multiple paths from the current location
+            branches.push(new Branch(row,col,checkMultipulePaths(row,col),cookies[row][col], copy(currentPath), currentTotal));     //Add the path to the stack
           }
           System.out.println(currentPath);
         }
